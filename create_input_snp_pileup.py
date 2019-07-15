@@ -38,16 +38,21 @@ def create_input_snp_pileup(conversion_path):
     ## empty dic to fill with sample info, indexed by patient, then "Tumor" and "Normal"
     dic = {}
 
+    ## empty dic to link libID with type, indexed by libid, used to provide an extra user-friendly identifier for tumor:normal pairs, which uses the tumor sample name
+    dic_type = {}
+    
     ## populate dic with patient and sample info from conversion file
     for line in data:
         line = line.rstrip().split('\t')
-        dic[line[pid]] = {}
+        if line[pid] not in dic:
+            dic[line[pid]] = {}
         if line[typ] == 'Normal':
             if "Normal" not in dic[line[pid]]:
-                dic[line[pid]]['Normal'] = [line[lib]]
+                dic[line[pid]]["Normal"] = [line[lib]]
             else:
                 dic[line[pid]]["Normal"].append(line[lib])
         else:
+            dic_type[line[lib]] = line[typ]
             if "Tumor" not in dic[line[pid]]:
                 dic[line[pid]]["Tumor"] = [line[lib]]
             else:
@@ -87,6 +92,7 @@ def create_input_snp_pileup(conversion_path):
             normal_libID = pair[0]
             tumor_libID = pair[1]
             # tries to get a normal bam
+            print(bampath+'/'+patientID+'/'+normal_libID+'.bwa.realigned.rmDups.recal.bam')
             if os.path.isfile(bampath+'/'+patientID+'/'+normal_libID+'.bwa.realigned.rmDups.recal.bam'):
                 normal_bam = bampath+'/'+patientID+'/'+normal_libID+'.bwa.realigned.rmDups.recal.bam'
             elif os.path.isfile(bampath+'/'+patientID+'/'+normal_libID+'-trim.bwa.realigned.rmDups.recal.bam'):
@@ -96,13 +102,14 @@ def create_input_snp_pileup(conversion_path):
                 continue
             # tries to get a tumor bam
             if os.path.isfile(bampath+'/'+patientID+'/'+tumor_libID+'.bwa.realigned.rmDups.recal.bam'):
-                normal_bam = bampath+'/'+patientID+'/'+tumor_libID+'.bwa.realigned.rmDups.recal.bam'
+                tumor_bam = bampath+'/'+patientID+'/'+tumor_libID+'.bwa.realigned.rmDups.recal.bam'
             elif os.path.isfile(bampath+'/'+patientID+'/'+tumor_libID+'-trim.bwa.realigned.rmDups.recal.bam'):
-                normal_bam = bampath+'/'+patientID+'/'+tumor_libID+'-trim.bwa.realigned.rmDups.recal.bam'
+                tumor_bam = bampath+'/'+patientID+'/'+tumor_libID+'-trim.bwa.realigned.rmDups.recal.bam'
             else:
                 print("Warning(5): Tumor bam path for patient cannot be determined...skipping.")
                 continue
-            outfile.write('\t'.join(patientID, normal_libID, tumor_libID, normal_bam, tumor_bam) + '\n')
+            sample_type = dic_type[tumor_libID]
+            outfile.write('\t'.join([patientID, normal_libID, tumor_libID, normal_bam, tumor_bam, sample_type]) + '\n')
 
 
 if __name__=="__main__":
