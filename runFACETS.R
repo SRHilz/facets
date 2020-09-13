@@ -20,6 +20,7 @@ for (file in list.files(path=dirPath, pattern='*.gz')){
   oo = procSample(xx, cval=150)
   local <- append(local, oo$dipLogR)
   fit = emcncf(oo)
+  write.table(fit$cncf, file=paste0(dirPath, '/', gsub('[.]gz','_cncf.txt', file)), quote=FALSE, row.names=FALSE, sep='\t')
   print(fit$purity)
   local <- append(local, fit$purity)
   local <- append(local, fit$ploidy)
