@@ -20,7 +20,7 @@ import sys, os
 
 def create_input_snp_pileup(conversion_path):
 
-    bampath = "/costellolab/jocostello/LG3/exomes_recal/"
+    bampath = "/costellolab/data1/jocostello/LG3/exomes_recal/"
 
     print("Reading in conversion file")
 
